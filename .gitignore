@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+stockings
 
 # Test binary, build with `go test -c`
 *.test
