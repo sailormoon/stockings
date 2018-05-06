@@ -3,14 +3,20 @@ package main
 import (
 	"fmt"
 
-	"github.com/maxmclau/gput"
+	"github.com/nsf/termbox-go"
 )
+
+func writeLine(line string, y int) {
+	for index, char := range line {
+		termbox.SetCell(index, y, rune(char), termbox.ColorDefault, termbox.Attribute(0))
+	}
+}
 
 // RenderQuotes will render the quotes map in the order of the provided symbols.
 func RenderQuotes(symbols []string, quotes Quotes) {
-	gput.Civis()
-	for _, symbol := range symbols {
-		fmt.Printf("%4s $%.2f\n", symbol, quotes[symbol].Price)
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	for index, symbol := range symbols {
+		writeLine(fmt.Sprintf("%-8s $%.2f", symbol, quotes[symbol].Price), index)
 	}
-	gput.Cuu(len(symbols))
+	termbox.Flush()
 }
