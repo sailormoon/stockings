@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
+	"time"
 )
 
 // Quote represents the last price seen for a symbol.
@@ -22,4 +24,18 @@ func GetQuotes(endpoint string) (Quotes, error) {
 	defer response.Body.Close()
 	var tickers map[string]Quote
 	return tickers, json.NewDecoder(response.Body).Decode(&tickers)
+}
+
+// PollQuotes polls for updated quotes every second and sends them down the channel.
+func PollQuotes(endpoint string, quotesQueue chan<- Quotes) {
+	for {
+		start := time.Now()
+		if quotes, err := GetQuotes(endpoint); err != nil {
+			log.Panicln(err)
+		} else {
+			quotesQueue <- quotes
+		}
+		// Ensure we're a good consumer and only hit the API once per second.
+		time.Sleep(time.Second - time.Since(start))
+	}
 }

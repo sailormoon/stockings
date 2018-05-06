@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/nsf/termbox-go"
 )
@@ -21,42 +20,25 @@ func main() {
 		symbols[i] = strings.ToUpper(symbol)
 	}
 
-	endpoint := fmt.Sprintf("https://api.iextrading.com/1.0/stock/market/batch?symbols=%s&types=price", strings.Join(symbols, ","))
-
 	if err := termbox.Init(); err != nil {
 		log.Panicln(err)
 	}
 	defer termbox.Close()
 
 	eventQueue := make(chan termbox.Event)
-	go func() {
-		for {
-			eventQueue <- termbox.PollEvent()
-		}
-	}()
+	go PollEvents(eventQueue)
 
+	endpoint := fmt.Sprintf("https://api.iextrading.com/1.0/stock/market/batch?symbols=%s&types=price", strings.Join(symbols, ","))
 	quotesQueue := make(chan Quotes)
-	go func() {
-		for {
-			start := time.Now()
-			if quotes, err := GetQuotes(endpoint); err != nil {
-				log.Panicln(err)
-			} else {
-				quotesQueue <- quotes
-			}
-			// Ensure we're a good consumer and only hit the API once per second.
-			time.Sleep(time.Second - time.Since(start))
-		}
-	}()
+	go PollQuotes(endpoint, quotesQueue)
 
 	for {
 		select {
 		case quotes := <-quotesQueue:
+			// TODO: Probably force a render every iteration if key presses are going to affect the UI.
 			RenderQuotes(symbols, quotes)
 		case event := <-eventQueue:
-			if event.Type == termbox.EventKey && event.Key == termbox.KeyEsc {
-				os.Exit(0)
-			}
+			HandleEvent(event)
 		}
 	}
 }

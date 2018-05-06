@@ -16,7 +16,7 @@ func writeLine(line string, y int) {
 func RenderQuotes(symbols []string, quotes Quotes) {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	for index, symbol := range symbols {
-		writeLine(fmt.Sprintf("%-8s $%.2f", symbol, quotes[symbol].Price), index)
+		writeLine(fmt.Sprintf("%-8s %8.2f", symbol, quotes[symbol].Price), index)
 	}
 	termbox.Flush()
 }
