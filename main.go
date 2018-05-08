@@ -25,6 +25,11 @@ func main() {
 	}
 	defer termbox.Close()
 
+	states, err := GetStates(symbols)
+	if err != nil {
+		log.Panicln(err)
+	}
+
 	eventQueue := make(chan termbox.Event)
 	go PollEvents(eventQueue)
 
@@ -36,7 +41,7 @@ func main() {
 		select {
 		case quotes := <-quotesQueue:
 			// TODO: Probably force a render every iteration if key presses are going to affect the UI.
-			RenderQuotes(symbols, quotes)
+			RenderQuotes(symbols, quotes, states)
 		case event := <-eventQueue:
 			HandleEvent(event)
 		}

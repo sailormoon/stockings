@@ -9,8 +9,7 @@ import (
 // HandleEvent turns a termbox.Event into a possible action.
 func HandleEvent(event termbox.Event) {
 	if event.Type == termbox.EventKey {
-		switch event.Key {
-		case termbox.KeyEsc, 'q', 'Q':
+		if event.Key == termbox.KeyEsc || event.Ch == 'q' || event.Ch == 'Q' {
 			os.Exit(0)
 		}
 	}

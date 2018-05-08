@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -14,6 +16,31 @@ type Quote struct {
 
 // Quotes is a collection of Quote structs keyed by symbol (e.g. AAPL -> Quote{175.00}).
 type Quotes map[string]Quote
+
+// State is the state queried at program start up using the Batch API, and then never queried again.
+type State struct {
+	OpenHighLowClose struct {
+		Open  Quote `json:"open"`
+		Close Quote `json:"close"`
+	} `json:"ohlc"`
+}
+
+// States is a map of symbol -> State.
+type States map[string]State
+
+// GetStates attempts to unmarshall the initial program state.
+func GetStates(symbols []string) (States, error) {
+	endpoint := fmt.Sprintf("https://api.iextrading.com/1.0/stock/market/batch?symbols=%s&types=ohlc", strings.Join(symbols, ","))
+	response, err := http.Get(endpoint)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	var states States
+	return states, json.NewDecoder(response.Body).Decode(&states)
+}
 
 // GetQuotes hits the passed in endpoint and attempts to parse it as JSON.
 func GetQuotes(endpoint string) (Quotes, error) {
