@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/nsf/termbox-go"
 )
@@ -20,7 +21,7 @@ func color(percentDiff float64) termbox.Attribute {
 }
 
 func percentageDifference(start float64, current float64) float64 {
-	return (current - start) / current * 100
+	return (current - start) / start * 100
 }
 
 // RenderQuotes will render the quotes map in the order of the provided symbols.
@@ -30,7 +31,7 @@ func RenderQuotes(symbols []string, quotes Quotes, states States) {
 		lastPrice := quotes[symbol].Price
 		percentDiff := percentageDifference(states[symbol].OpenHighLowClose.Open.Price, lastPrice)
 		writeLine(fmt.Sprintf("%-8s %8.2f %6.2f%%", symbol, lastPrice,
-			percentDiff), index, color(percentDiff))
+			math.Abs(percentDiff)), index, color(percentDiff))
 	}
 	termbox.Flush()
 }
